@@ -1,0 +1,47 @@
+# The plugin's own gate: stylua formatting plus the full contract harness on
+# both editors — Neovim (native LSP config, inertness, and a live attach +
+# hover round trip against the real released server, enforced via
+# TSVSHEET_VIM_E2E=required) and classic vim (portable core + stubbed vim-lsp
+# registration). The weekly run re-tests the unchanged tree against the newest
+# editor and server releases so upstream regressions still surface.
+name: verify
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "43 6 * * 1"
+  workflow_dispatch:
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - name: Install vim and neovim
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends vim
+          curl -fsSL -o /tmp/nvim.tar.gz https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz
+          sudo tar -C /opt -xzf /tmp/nvim.tar.gz
+          echo /opt/nvim-linux-x86_64/bin >> "${GITHUB_PATH}"
+      - name: Install tsvsheet-lsp
+        shell: bash
+        run: go install github.com/tsvsheet/tsvsheet.lsp/cmd/tsvsheet-lsp@latest
+      - name: Check
+        shell: bash
+        env:
+          TSVSHEET_VIM_E2E: required
+        run: make check

@@ -1,0 +1,46 @@
+*tsvsheet.txt*  Vim and Neovim support for tsvsheet .tsvt spreadsheets
+
+==============================================================================
+INTRODUCTION                                                        *tsvsheet*
+
+tsvsheet is a spreadsheet in plain text: a .tsvt file is a tab-separated grid
+whose cells are values or =formulas. See https://tsvsheet.com
+
+This plugin provides:
+
+- filetype detection: *.tsvt files get the 'tsvsheet' filetype
+- buffer settings that keep cells intact ('noexpandtab' - cells are separated
+  by real TAB characters)
+- language-server wiring for tsvsheet-lsp (diagnostics and hover):
+  - Neovim 0.11+: the built-in LSP client, enabled automatically
+  - Vim: registration with vim-lsp (https://github.com/prabirshrestha/vim-lsp)
+    when it is installed
+
+==============================================================================
+SERVER BINARY                                            *tsvsheet-lsp-binary*
+
+The plugin launches `tsvsheet-lsp` from your $PATH. Install it either:
+
+- with mason.nvim, from the tsvsheet mason registry: add
+  `github:tsvsheet/mason-registry` to mason's `registries` setting, then
+  run `:MasonInstall tsvsheet-lsp`
+- from a release: https://github.com/tsvsheet/tsvsheet.lsp/releases
+- from source:
+  `go install github.com/tsvsheet/tsvsheet.lsp/cmd/tsvsheet-lsp@latest`
+
+==============================================================================
+TROUBLESHOOTING                                     *tsvsheet-troubleshooting*
+
+No diagnostics or hover ~
+Confirm `tsvsheet-lsp` is on the editor's $PATH. GUI editors often see a
+shorter $PATH than your shell.
+
+Everything flagged on one line ~
+The file likely uses spaces instead of real TABs between cells; tsvsheet
+cells are TAB-separated.
+
+Server logs ~
+The server logs to stderr, which the client captures. In Neovim, see
+|lsp-log|; the server accepts `--log-level debug` for verbose traces.
+
+vim:tw=78:ts=8:noet:ft=help:norl:
